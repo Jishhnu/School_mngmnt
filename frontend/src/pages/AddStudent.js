@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import Navbar from "../components/Navbar";
+import StudentForm from "../components/StudentForm";
 
 function AddStudent() {
 
@@ -14,19 +15,39 @@ function AddStudent() {
     course: "",
   });
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const validateStudent = () => {
+    if (
+      !student.name.trim() ||
+      !student.email.trim() ||
+      !student.phone.trim() ||
+      !student.course.trim()
+    ) {
+      return "Please complete all student details.";
+    }
+
+    if (!/\S+@\S+\.\S+/.test(student.email)) {
+      return "Please enter a valid email address.";
+    }
+
+    return "";
+  };
+
   const submit = async (e) => {
 
     e.preventDefault();
+    setError("");
 
-    if (
-      !student.name ||
-      !student.email ||
-      !student.phone ||
-      !student.course
-    ) {
-      alert("All fields are required");
+    const validationError = validateStudent();
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
+
+    setLoading(true);
 
     try {
 
@@ -35,13 +56,19 @@ function AddStudent() {
         student
       );
 
-      alert("Student Added Successfully");
-
-      navigate("/students");
+      navigate("/students", {
+        state: {
+          success: "Student added successfully.",
+        },
+        replace: true,
+      });
 
     } catch {
 
-      alert("Failed to add student");
+      setError("Unable to add the student right now. Please try again.");
+    } finally {
+
+      setLoading(false);
     }
   };
 
@@ -49,77 +76,40 @@ function AddStudent() {
     <>
       <Navbar />
 
-      <div className="container mt-4">
+      <main className="app-main">
 
-        <div className="row justify-content-center">
+        <div className="container">
 
-          <div className="col-md-6">
+          <div className="row justify-content-center">
 
-            <div className="card shadow">
+            <div className="col-lg-7 col-xl-6">
 
-              <div className="card-body">
-
-                <h3 className="mb-4">
+              <div className="page-header">
+                <h1 className="page-title">
                   Add Student
-                </h3>
+                </h1>
+                <p className="page-subtitle">
+                  Enter the student details below.
+                </p>
+              </div>
 
-                <form onSubmit={submit}>
+              <div className="card card-soft">
 
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Name"
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        name: e.target.value
-                      })
-                    }
+                <div className="card-body p-4">
+
+                  {error && (
+                    <div className="alert alert-danger" role="alert">
+                      {error}
+                    </div>
+                  )}
+
+                  <StudentForm
+                    student={student}
+                    onChange={setStudent}
+                    onSubmit={submit}
+                    submitLabel="Save Student"
+                    loading={loading}
                   />
-
-                  <input
-                    type="email"
-                    className="form-control mb-3"
-                    placeholder="Email"
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        email: e.target.value
-                      })
-                    }
-                  />
-
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Phone"
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        phone: e.target.value
-                      })
-                    }
-                  />
-
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Course"
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        course: e.target.value
-                      })
-                    }
-                  />
-
-                  <button
-                    className="btn btn-success w-100"
-                  >
-                    Save Student
-                  </button>
-
-                </form>
 
               </div>
 
@@ -129,7 +119,9 @@ function AddStudent() {
 
         </div>
 
-      </div>
+        </div>
+
+      </main>
     </>
   );
 }

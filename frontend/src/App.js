@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import StudentList from "./pages/StudentList";
 import AddStudent from "./pages/AddStudent";
 import EditStudent from "./pages/EditStudent";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
 
@@ -25,22 +26,38 @@ function App() {
 
         <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/students"
-          element={<StudentList />}
+          element={
+            <ProtectedRoute>
+              <StudentList />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/add"
-          element={<AddStudent />}
+          element={
+            <ProtectedRoute>
+              <AddStudent />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/edit/:id"
-          element={<EditStudent />}
+          element={
+            <ProtectedRoute>
+              <EditStudent />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>

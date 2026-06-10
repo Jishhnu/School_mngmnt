@@ -10,6 +10,7 @@ import {
 
 import API from "../api";
 import Navbar from "../components/Navbar";
+import StudentForm from "../components/StudentForm";
 
 function EditStudent() {
 
@@ -24,32 +25,59 @@ function EditStudent() {
     course: "",
   });
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+
   useEffect(() => {
+    const loadStudent = async () => {
+      try {
+        const response =
+          await API.get(
+            `students/${id}/`
+          );
+
+        setStudent(response.data);
+      } catch {
+        setError("We could not find that student record.");
+      } finally {
+        setPageLoading(false);
+      }
+    };
 
     loadStudent();
+  }, [id]);
 
-  }, []);
-
-  const loadStudent = async () => {
-
-    try {
-
-      const response =
-        await API.get(
-          `students/${id}/`
-        );
-
-      setStudent(response.data);
-
-    } catch {
-
-      alert("Student Not Found");
+  const validateStudent = () => {
+    if (
+      !student.name.trim() ||
+      !student.email.trim() ||
+      !student.phone.trim() ||
+      !student.course.trim()
+    ) {
+      return "Please complete all student details.";
     }
+
+    if (!/\S+@\S+\.\S+/.test(student.email)) {
+      return "Please enter a valid email address.";
+    }
+
+    return "";
   };
 
   const updateStudent = async (e) => {
 
     e.preventDefault();
+    setError("");
+
+    const validationError = validateStudent();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setLoading(true);
 
     try {
 
@@ -58,13 +86,19 @@ function EditStudent() {
         student
       );
 
-      alert("Student Updated");
-
-      navigate("/students");
+      navigate("/students", {
+        state: {
+          success: "Student updated successfully.",
+        },
+        replace: true,
+      });
 
     } catch {
 
-      alert("Update Failed");
+      setError("Unable to update the student right now. Please try again.");
+    } finally {
+
+      setLoading(false);
     }
   };
 
@@ -72,79 +106,48 @@ function EditStudent() {
     <>
       <Navbar />
 
-      <div className="container mt-4">
+      <main className="app-main">
 
-        <div className="row justify-content-center">
+        <div className="container">
 
-          <div className="col-md-6">
+          <div className="row justify-content-center">
 
-            <div className="card shadow">
+            <div className="col-lg-7 col-xl-6">
 
-              <div className="card-body">
-
-                <h3 className="mb-4">
+              <div className="page-header">
+                <h1 className="page-title">
                   Edit Student
-                </h3>
+                </h1>
+                <p className="page-subtitle">
+                  Update the student details below.
+                </p>
+              </div>
 
-                <form
-                  onSubmit={updateStudent}
-                >
+              <div className="card card-soft">
 
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={student.name}
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        name: e.target.value
-                      })
-                    }
-                  />
+                <div className="card-body p-4">
 
-                  <input
-                    type="email"
-                    className="form-control mb-3"
-                    value={student.email}
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        email: e.target.value
-                      })
-                    }
-                  />
+                  {pageLoading && (
+                    <div className="text-muted">
+                      Loading student details...
+                    </div>
+                  )}
 
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={student.phone}
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        phone: e.target.value
-                      })
-                    }
-                  />
+                  {error && (
+                    <div className="alert alert-danger" role="alert">
+                      {error}
+                    </div>
+                  )}
 
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={student.course}
-                    onChange={(e) =>
-                      setStudent({
-                        ...student,
-                        course: e.target.value
-                      })
-                    }
-                  />
-
-                  <button
-                    className="btn btn-warning w-100"
-                  >
-                    Update Student
-                  </button>
-
-                </form>
+                  {!pageLoading && !error.includes("find") && (
+                    <StudentForm
+                      student={student}
+                      onChange={setStudent}
+                      onSubmit={updateStudent}
+                      submitLabel="Update Student"
+                      loading={loading}
+                    />
+                  )}
 
               </div>
 
@@ -154,7 +157,9 @@ function EditStudent() {
 
         </div>
 
-      </div>
+        </div>
+
+      </main>
     </>
   );
 }
