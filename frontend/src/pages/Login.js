@@ -84,7 +84,7 @@ function Login() {
 
                 <div className="text-center mb-3">
                   <span className="brand-mark">
-                              <GraduationCap size={20} />
+                              <GraduationCap size={40} />
                             </span>
                   <h1 className="h3 text-center fw-bold mb-2">
                     WhiteFox Media
